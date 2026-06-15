@@ -225,10 +225,10 @@ svg.curve-chart{width:100%;overflow:visible}
     </div>
     <div>
       <h1>Coste Variable <span>/ Room Night</span></h1>
-      <div class="hdr-sub">Palladium Hotel Group · Metodología controller · Todo incluido · Real Ene–Abr 2026</div>
+      <div class="hdr-sub">Palladium Hotel Group · Metodología controller · Todo incluido · Real Ene–May 2026</div>
     </div>
   </div>
-  <div class="period-badge" id="periodBadge">Ene–Abr 2026</div>
+  <div class="period-badge" id="periodBadge">Ene–May 2026</div>
 </div>
 
 <!-- P&L UPLOAD -->
@@ -245,7 +245,7 @@ svg.curve-chart{width:100%;overflow:visible}
     </div>
     <div class="uf">
       <div class="ul">Período de datos</div>
-      <input class="uinp" id="periodInp" type="text" placeholder="ej. Ene–Jun 2026" value="Ene–Abr 2026">
+      <input class="uinp" id="periodInp" type="text" placeholder="ej. Ene–Jun 2026" value="Ene–May 2026">
       <div class="upload-note">
         Formato esperado: pestañas <b>P&L USALI</b> y <b>KPIs</b><br>
         con filas de División → Mes → Marca en el encabezado
@@ -268,6 +268,12 @@ svg.curve-chart{width:100%;overflow:visible}
 <div class="payroll-section">
   <div class="upload-ttl">Presupuesto Payroll por Tramos — <span style="color:#1a7a3c">✓ Todos los destinos cargados</span></div>
   <div class="payroll-grid" id="payrollGrid"></div>
+  <div style="margin-top:12px;padding:10px 14px;background:#f0f5fc;border-radius:6px;font-size:10px;color:var(--muted);line-height:1.7">
+    <b style="color:var(--text)">Parámetros de payroll (Presupuesto 2026)</b> — Fuente: archivos TD Final por destino ·
+    Capacidad por marca (hab.): RVM FS=170, GP=505, SLCT=425, TRS=454 · CMU FS=180, SLCT=493, TRS=473 ·
+    PUJ FS=156, GP=948, SLCT=470, TRS=372 · PVR FS=95, GP=410 · MBJ GP=840, SL=155 · SSA GP=516, SL=138 ·
+    Delta/RN = (Payroll_tramo − Payroll_tramo−10%) / (Cap × Occ% × 30 días) · Transversal prorrateado por capacidad
+  </div>
 </div>
 
 <!-- DESTINATION TABS -->
@@ -317,37 +323,37 @@ svg.curve-chart{width:100%;overflow:visible}
 
 <script>
 // ════════════════════════════════════════════════════════════════
-// INITIAL DATA (Ene-Abr 2026 real, from Python extraction)
+// INITIAL DATA (Ene-May 2026 real, media ponderada por RN)
 // ════════════════════════════════════════════════════════════════
 const INITIAL_DATA = {
   PVR:{
-    FS: {rn:8538,  occ:.7509,adr:204.04,fb:59.45,opex:{Amenities:1.768,Chemical:0.034,Cleaning:1.442,FBCost:0.263,Kitchen:0.004,Office:0.291,ProfSvc:0.586},fees:{Direct:5.806,NonDirect:1.523,Marketing:2.369,Loyalty:6.552,Sales:15.274},util:1.941},
-    GP: {rn:35246, occ:.7162,adr:168.21,fb:34.09, opex:{Amenities:0.434,Chemical:0.016,Cleaning:0.546,FBCost:0.122,Kitchen:0.084,Office:0.240,ProfSvc:0.570},fees:{Direct:3.783,NonDirect:1.670,Marketing:2.819,Loyalty:4.438,Sales:9.815},util:2.066}
+    FS: {rn:10635, occ:.7432,adr:215.57,fb:60.0275,opex:{Amenities:2.1515,Chemical:0.0329,Cleaning:1.4455,FBCost:0.2687,Kitchen:0.0057,Office:0.4423,ProfSvc:0.5930},fees:{Direct:5.7302,NonDirect:1.5969,Marketing:2.8437,Loyalty:6.9699,Sales:14.0660},util:1.9931},
+    GP: {rn:43794, occ:.7061,adr:177.02,fb:34.6394,opex:{Amenities:0.4514,Chemical:0.0187,Cleaning:0.5825,FBCost:0.1322,Kitchen:0.0676,Office:0.3403,ProfSvc:0.5881},fees:{Direct:3.6153,NonDirect:1.6551,Marketing:2.6542,Loyalty:4.4363,Sales:9.0636},util:2.1227}
   },
   RVM:{
-    FS:  {rn:16684,occ:.8260,adr:335.63,fb:81.17,opex:{Amenities:2.218,Chemical:0.039,Cleaning:0.878,FBCost:2.801,Kitchen:0.001,Office:0.678,ProfSvc:0.628},fees:{Direct:13.585,NonDirect:1.198,Marketing:5.159,Loyalty:8.154,Sales:10.607},util:2.586},
-    GP:  {rn:52235,occ:.8724,adr:181.82,fb:34.42, opex:{Amenities:0.441,Chemical:0.068,Cleaning:0.797,FBCost:0.559,Kitchen:0.008,Office:0.512,ProfSvc:0.501},fees:{Direct:4.943,NonDirect:0.735,Marketing:2.170,Loyalty:6.520,Sales:16.415},util:2.501},
-    SLCT:{rn:37330,occ:.7362,adr:226.01,fb:46.97, opex:{Amenities:0.594,Chemical:0.048,Cleaning:0.595,FBCost:0.324,Kitchen:0.004,Office:0.193,ProfSvc:0.471},fees:{Direct:6.905,NonDirect:1.023,Marketing:3.930,Loyalty:4.416,Sales:9.716},util:2.619},
-    TRS: {rn:40717,occ:.7565,adr:294.72,fb:53.36, opex:{Amenities:1.688,Chemical:0.045,Cleaning:0.700,FBCost:1.065,Kitchen:0.034,Office:0.574,ProfSvc:0.582},fees:{Direct:10.433,NonDirect:1.214,Marketing:4.683,Loyalty:8.296,Sales:14.656},util:2.675}
+    FS:  {rn:19934, occ:.7919,adr:331.01,fb:80.1297,opex:{Amenities:2.1477,Chemical:0.0470,Cleaning:0.8500,FBCost:2.6762,Kitchen:0.0052,Office:0.7005,ProfSvc:0.6007},fees:{Direct:12.5003,NonDirect:1.2100,Marketing:5.7291,Loyalty:7.7045,Sales:9.8588},util:2.7383},
+    GP:  {rn:60683, occ:.8261,adr:184.15,fb:34.4139,opex:{Amenities:0.4315,Chemical:0.0669,Cleaning:0.8035,FBCost:0.5614,Kitchen:0.0098,Office:0.5195,ProfSvc:0.5513},fees:{Direct:4.9105,NonDirect:0.9059,Marketing:2.4238,Loyalty:6.5401,Sales:16.3698},util:2.6428},
+    SLCT:{rn:43897, occ:.7006,adr:224.30,fb:45.8600,opex:{Amenities:0.5692,Chemical:0.0508,Cleaning:0.6101,FBCost:0.3341,Kitchen:0.0034,Office:0.2116,ProfSvc:0.5597},fees:{Direct:6.0690,NonDirect:0.9521,Marketing:3.5105,Loyalty:4.0484,Sales:9.4455},util:2.7544},
+    TRS: {rn:49302, occ:.7310,adr:293.92,fb:53.5143,opex:{Amenities:1.7283,Chemical:0.0596,Cleaning:0.6814,FBCost:1.0780,Kitchen:0.0289,Office:0.5682,ProfSvc:0.6015},fees:{Direct:9.8034,NonDirect:1.2324,Marketing:4.0470,Loyalty:7.9771,Sales:13.5375},util:2.8313}
   },
   CMU:{
-    FS:  {rn:17496,occ:.8180,adr:450.25,fb:60.76, opex:{Amenities:2.233,Chemical:0.405,Cleaning:0.650,FBCost:3.010,Kitchen:0.176,Office:0.306,ProfSvc:0.000},fees:{Direct:17.151,NonDirect:0.983,Marketing:3.364,Loyalty:10.135,Sales:10.303},util:2.881},
-    SLCT:{rn:46253,occ:.7832,adr:291.54,fb:40.71, opex:{Amenities:0.720,Chemical:0.340,Cleaning:0.787,FBCost:0.933,Kitchen:0.144,Office:0.281,ProfSvc:0.163},fees:{Direct:9.470,NonDirect:1.101,Marketing:6.205,Loyalty:7.232,Sales:17.258},util:3.183},
-    TRS: {rn:44875,occ:.7921,adr:376.90,fb:47.88, opex:{Amenities:2.180,Chemical:0.232,Cleaning:0.958,FBCost:2.673,Kitchen:0.079,Office:0.334,ProfSvc:0.168},fees:{Direct:10.886,NonDirect:1.111,Marketing:5.034,Loyalty:6.583,Sales:12.907},util:3.000}
+    FS:  {rn:20999, occ:.7863,adr:444.94,fb:60.2792,opex:{Amenities:2.3459,Chemical:0.3759,Cleaning:0.6128,FBCost:2.9122,Kitchen:0.1472,Office:0.3124,ProfSvc:0.0198},fees:{Direct:15.8068,NonDirect:0.9938,Marketing:3.2805,Loyalty:10.0791,Sales:10.7401},util:3.0759},
+    SLCT:{rn:56799, occ:.7659,adr:292.81,fb:40.4139,opex:{Amenities:0.7438,Chemical:0.3498,Cleaning:0.8074,FBCost:0.9835,Kitchen:0.1334,Office:0.2733,ProfSvc:0.1866},fees:{Direct:9.0112,NonDirect:1.1186,Marketing:6.4177,Loyalty:7.2300,Sales:15.9074},util:3.3155},
+    TRS: {rn:56173, occ:.7878,adr:375.31,fb:48.0878,opex:{Amenities:2.1000,Chemical:0.2245,Cleaning:0.9931,FBCost:2.5245,Kitchen:0.0893,Office:0.3538,ProfSvc:0.1739},fees:{Direct:10.2691,NonDirect:1.1772,Marketing:4.4187,Loyalty:6.6463,Sales:11.1529},util:3.0739}
   },
   PUJ:{
-    FS:  {rn:13342,occ:.7082,adr:261.21,fb:79.55, opex:{Amenities:2.101,Chemical:0.067,Cleaning:1.137,FBCost:1.035,Kitchen:0.006,Office:0.348,ProfSvc:0.263},fees:{Direct:5.343,NonDirect:1.258,Marketing:1.716,Loyalty:8.691,Sales:5.808},util:3.179},
-    GP:  {rn:100942,occ:.8879,adr:216.94,fb:38.13,opex:{Amenities:0.477,Chemical:0.029,Cleaning:0.625,FBCost:0.240,Kitchen:0.015,Office:0.134,ProfSvc:0.487},fees:{Direct:4.193,NonDirect:0.923,Marketing:2.937,Loyalty:6.275,Sales:3.818},util:3.342},
-    SLCT:{rn:43563,occ:.7627,adr:176.22,fb:43.97, opex:{Amenities:0.574,Chemical:0.026,Cleaning:0.612,FBCost:0.222,Kitchen:0.037,Office:0.244,ProfSvc:0.511},fees:{Direct:7.191,NonDirect:1.604,Marketing:3.835,Loyalty:1.071,Sales:0.772},util:3.124},
-    TRS: {rn:38985,occ:.8737,adr:275.59,fb:59.86, opex:{Amenities:1.079,Chemical:0.030,Cleaning:0.741,FBCost:0.873,Kitchen:0.014,Office:0.099,ProfSvc:0.272},fees:{Direct:7.139,NonDirect:1.601,Marketing:3.966,Loyalty:4.785,Sales:2.453},util:3.252}
+    FS:  {rn:16195, occ:.6848,adr:263.95,fb:78.4459,opex:{Amenities:2.0151,Chemical:0.1008,Cleaning:1.3658,FBCost:1.0711,Kitchen:0.0054,Office:0.3632,ProfSvc:0.2490},fees:{Direct:5.2811,NonDirect:1.3552,Marketing:1.4137,Loyalty:8.4424,Sales:7.1445},util:3.5106},
+    GP:  {rn:121932,occ:.8580,adr:211.78,fb:37.7216,opex:{Amenities:0.4517,Chemical:0.0317,Cleaning:0.5838,FBCost:0.2377,Kitchen:0.0138,Office:0.1464,ProfSvc:0.4842},fees:{Direct:3.9269,NonDirect:0.9293,Marketing:2.8127,Loyalty:6.4549,Sales:5.0811},util:3.6763},
+    SLCT:{rn:50306, occ:.7181,adr:182.54,fb:43.7900,opex:{Amenities:0.5996,Chemical:0.0255,Cleaning:0.6905,FBCost:0.2279,Kitchen:0.0409,Office:0.2611,ProfSvc:0.4752},fees:{Direct:7.0555,NonDirect:1.6893,Marketing:3.7471,Loyalty:1.0580,Sales:1.0376},util:3.3927},
+    TRS: {rn:47490, occ:.8493,adr:275.73,fb:59.7837,opex:{Amenities:1.1094,Chemical:0.0296,Cleaning:0.7434,FBCost:0.8340,Kitchen:0.0153,Office:0.1046,ProfSvc:0.2608},fees:{Direct:6.7759,NonDirect:1.6462,Marketing:3.6558,Loyalty:4.8029,Sales:2.3557},util:3.5853}
   },
   MBJ:{
-    GP: {rn:75342,occ:.7364,adr:248.29,fb:57.63, opex:{Amenities:0.872,Chemical:0.511,Cleaning:0.900,FBCost:0.803,Kitchen:0.005,Office:0.487,ProfSvc:1.277},fees:{Direct:6.046,NonDirect:1.476,Marketing:4.125,Loyalty:4.409,Sales:4.021},util:3.284},
-    SL: {rn:12913,occ:.6944,adr:292.38,fb:52.29, opex:{Amenities:1.188,Chemical:0.513,Cleaning:0.903,FBCost:2.570,Kitchen:0.003,Office:0.516,ProfSvc:1.004},fees:{Direct:3.002,NonDirect:0.742,Marketing:2.052,Loyalty:2.322,Sales:1.691},util:3.324}
+    GP: {rn:94902, occ:.7355,adr:251.07,fb:56.7781,opex:{Amenities:0.8053,Chemical:0.5195,Cleaning:0.8360,FBCost:0.7935,Kitchen:0.0065,Office:0.5090,ProfSvc:1.3171},fees:{Direct:5.6918,NonDirect:1.5280,Marketing:3.9910,Loyalty:4.6135,Sales:3.6703},util:3.3200},
+    SL: {rn:15502, occ:.6678,adr:293.71,fb:52.7583,opex:{Amenities:1.6095,Chemical:0.5196,Cleaning:0.8815,FBCost:2.7013,Kitchen:0.0043,Office:0.6275,ProfSvc:1.0528},fees:{Direct:2.5006,NonDirect:0.6181,Marketing:1.7213,Loyalty:2.2601,Sales:1.5855},util:3.5287}
   },
   SSA:{
-    GP: {rn:52501,occ:.8524,adr:217.04,fb:47.73, opex:{Amenities:0.595,Chemical:0.286,Cleaning:0.602,FBCost:0.228,Kitchen:0.019,Office:0.137,ProfSvc:1.495},fees:{Direct:8.882,NonDirect:1.085,Marketing:3.689,Loyalty:6.462,Sales:8.638},util:2.512},
-    SL: {rn:14250,occ:.8643,adr:403.63,fb:44.23, opex:{Amenities:0.598,Chemical:0.193,Cleaning:0.595,FBCost:0.042,Kitchen:0.016,Office:0.115,ProfSvc:0.261},fees:{Direct:8.844,NonDirect:1.078,Marketing:2.811,Loyalty:6.278,Sales:5.180},util:2.364}
+    GP: {rn:63448, occ:.8234,adr:212.84,fb:46.4366,opex:{Amenities:0.5727,Chemical:0.2610,Cleaning:0.5899,FBCost:0.2399,Kitchen:0.0158,Office:0.1341,ProfSvc:1.5205},fees:{Direct:8.0040,NonDirect:1.1504,Marketing:3.6401,Loyalty:6.0561,Sales:8.8676},util:2.4882},
+    SL: {rn:16059, occ:.8146,adr:463.28,fb:48.6588,opex:{Amenities:0.6506,Chemical:0.2086,Cleaning:0.6572,FBCost:0.0564,Kitchen:0.0143,Office:0.1319,ProfSvc:0.2404},fees:{Direct:8.2750,NonDirect:1.1215,Marketing:2.8780,Loyalty:6.5623,Sales:5.3819},util:2.7128}
   }
 };
 
@@ -584,7 +590,7 @@ function renderBreakdown(ab) {
   h += row('Cocinas + Restaurantes + Bares + RS + Minibares', b => DATA[currentDest]?.[b]?.fb||0);
 
   // OPEX
-  h += sec('▸ OPEX Operativos','USD/RN fijo','op');
+  h += sec('▸ OPEX Operativos','USD/RN · 7 líneas P&L','op');
   const opexKeys = ['Amenities','Chemical','Cleaning','FBCost','Kitchen','Office','ProfSvc'];
   const opexLabels = ['Amenities','Chemical Products','Cleaning Supplies','F&B Cost (OPEX Rooms)','Kitchen Comp.','Office Supplies','Professional Svc'];
   for (let i=0; i<opexKeys.length; i++) {
@@ -603,8 +609,8 @@ function renderBreakdown(ab) {
   h += subrow('Subtotal Fees', b => calcFixed(currentDest,b).fees);
 
   // Utilities
-  h += sec('▸ Utilities','total/RN × 20%','util');
-  h += row('Electricidad + Gas + Combustible', b => DATA[currentDest]?.[b]?.util||0);
+  h += sec('▸ Utilities','(Electricity+Gas+Water+Fuels)/RN × 20% variable','util');
+  h += row('Electricidad + Gas + Agua + Combustible (20% variable)', b => DATA[currentDest]?.[b]?.util||0);
 
   // Payroll
   h += sec(`▸ Payroll Δ ${currentOcc-10}%→${currentOcc}%`,'delta/RN incl. transversal','pay');
@@ -693,10 +699,12 @@ function renderTable() {
   const rows=[
     {label:'F&B COST TOTAL (Food + Beverage)',isSec:true},
     {label:'F&B Cost / RN',fn:(b,o)=>DATA[currentDest]?.[b]?.fb||0},
-    {label:'OPEX OPERATIVOS (USD/RN fijo)',isSec:true},
+    {label:'OPEX OPERATIVOS — 7 líneas P&L USALI (USD/RN)',isSec:true},
     {label:'Amenities',fn:(b,o)=>DATA[currentDest]?.[b]?.opex?.Amenities||0},
     {label:'Chemical Products',fn:(b,o)=>DATA[currentDest]?.[b]?.opex?.Chemical||0},
     {label:'Cleaning Supplies',fn:(b,o)=>DATA[currentDest]?.[b]?.opex?.Cleaning||0},
+    {label:'F&B Cost (OPEX Rooms)',fn:(b,o)=>DATA[currentDest]?.[b]?.opex?.FBCost||0},
+    {label:'Kitchen Comp.',fn:(b,o)=>DATA[currentDest]?.[b]?.opex?.Kitchen||0},
     {label:'Office Supplies',fn:(b,o)=>DATA[currentDest]?.[b]?.opex?.Office||0},
     {label:'Professional Svc',fn:(b,o)=>DATA[currentDest]?.[b]?.opex?.ProfSvc||0},
     {label:'Subtotal OPEX',fn:(b,o)=>calcFixed(currentDest,b).opex,isSub:true},
@@ -707,8 +715,8 @@ function renderTable() {
     {label:'Loyalty Commissions',fn:(b,o)=>DATA[currentDest]?.[b]?.fees?.Loyalty||0},
     {label:'Sales Commission',fn:(b,o)=>DATA[currentDest]?.[b]?.fees?.Sales||0},
     {label:'Subtotal Fees',fn:(b,o)=>calcFixed(currentDest,b).fees,isSub:true},
-    {label:'UTILITIES (total/RN × 20%)',isSec:true},
-    {label:'Utilities variable',fn:(b,o)=>DATA[currentDest]?.[b]?.util||0},
+    {label:'UTILITIES — (Electricity+Gas+Water+Fuels)/RN × 20%',isSec:true},
+    {label:'Utilities variable (20% s/total)',fn:(b,o)=>DATA[currentDest]?.[b]?.util||0,isTramo:false},
     {label:'PAYROLL Δ / RN (incl. transversal)',isSec:true},
     {label:'Payroll Δ / RN',fn:(b,o)=>getPay(currentDest,b,o),isTramo:true},
     {label:'TOTAL COSTE VARIABLE / RN',fn:(b,o)=>calcTotal(currentDest,b,o).total,isTot:true},
@@ -776,10 +784,16 @@ function parseFiles() {
   reader.onload = e => {
     try {
       const wb = XLSX.read(e.target.result, {type:'array'});
-      const plSheet  = wb.Sheets['P&L USALI'];
-      const kpiSheet = wb.Sheets['KPIs'];
-      if (!plSheet)  { setStatus('No se encontró pestaña "P&L USALI"','err'); document.getElementById('parseBtn').disabled=false; return; }
-      if (!kpiSheet) { setStatus('No se encontró pestaña "KPIs"','err'); document.getElementById('parseBtn').disabled=false; return; }
+
+      // ── Tolerant sheet name matching ───────────────────────────
+      const findSheet = (wb, pattern) => {
+        const key = Object.keys(wb.Sheets).find(n => n.toLowerCase().replace(/\s/g,'').includes(pattern));
+        return key ? wb.Sheets[key] : null;
+      };
+      const plSheet  = findSheet(wb, 'p&lusali') || findSheet(wb, 'p&l');
+      const kpiSheet = findSheet(wb, 'kpis')     || findSheet(wb, 'kpi');
+      if (!plSheet)  { setStatus('No se encontró pestaña P&L USALI (o similar)','err'); document.getElementById('parseBtn').disabled=false; return; }
+      if (!kpiSheet) { setStatus('No se encontró pestaña KPIs (o similar)','err'); document.getElementById('parseBtn').disabled=false; return; }
 
       const pl   = XLSX.utils.sheet_to_json(plSheet,  {header:1, defval:null});
       const kpis = XLSX.utils.sheet_to_json(kpiSheet, {header:1, defval:null});
@@ -787,7 +801,6 @@ function parseFiles() {
       const result = parsePL(pl, kpis);
       if (result.error) { setStatus(result.error,'err'); document.getElementById('parseBtn').disabled=false; return; }
 
-      // Merge into DATA
       for (const [dest, brands] of Object.entries(result)) {
         if (!DATA[dest]) DATA[dest] = {};
         for (const [brand, vals] of Object.entries(brands)) {
@@ -797,7 +810,7 @@ function parseFiles() {
 
       const period = document.getElementById('periodInp').value || 'Actualizado';
       document.getElementById('periodBadge').textContent = period;
-      setStatus(`✓ Datos procesados correctamente — ${Object.keys(result).join(', ')}`, 'ok');
+      setStatus(`✓ Datos procesados — ${Object.keys(result).join(', ')}`, 'ok');
       buildDestTabs(); buildBrandTabs(); renderAll();
     } catch(err) {
       setStatus(`Error al procesar: ${err.message}`, 'err');
@@ -810,47 +823,107 @@ function parseFiles() {
 
 function parsePL(pl, kpis) {
   const SKIP_BRANDS=['Sin marca','Resultado','Sin asignar','#'];
-  const DATA_MONTHS=['ENE','FEB','MAR'];
 
-  // ── KPI column map: row1=Div, row2=Mes, row3=Marca, row4=ACC REAL 26 ──
+  // ── Detect KPI structure: multi-month (Div|Mes|Marca) or single-month (Marca only) ──
+  // Multi-month: row1=Div, row2=Mes, row3=Marca, row4=ACC REAL 26
+  // Single-month: row1=Marca, row2=REAL 26 (no Div row)
+  const isMultiMonth = kpis[1] && String(kpis[1]?.[1]||'').includes('División');
   const kpiStruct={}; let kd=null,km=null,kb=null;
-  const klen=(kpis[4]||[]).length;
-  for(let c=2;c<klen;c++){
-    const d=kpis[1]?.[c],m=kpis[2]?.[c],b=kpis[3]?.[c],s=kpis[4]?.[c];
-    if(d&&String(d).trim()) kd=String(d).trim();
-    if(m&&String(m).trim()) km=String(m).trim();
-    if(b&&String(b).trim()) kb=String(b).trim();
-    if(s&&String(s).trim()==='ACC REAL 26'){const k=`${kd}|${km}|${kb}`;if(!kpiStruct[k])kpiStruct[k]=c;}
+
+  if (isMultiMonth) {
+    // Multi-month: build (dest|month|brand) → col
+    const klen=(kpis[4]||[]).length;
+    for(let c=2;c<klen;c++){
+      const d=kpis[1]?.[c],m=kpis[2]?.[c],b=kpis[3]?.[c],s=kpis[4]?.[c];
+      if(d&&String(d).trim()) kd=String(d).trim();
+      if(m&&String(m).trim()) km=String(m).trim();
+      if(b&&String(b).trim()) kb=String(b).trim();
+      if(s&&String(s).trim()==='ACC REAL 26'){const k=`${kd}|${km}|${kb}`;if(!kpiStruct[k])kpiStruct[k]=c;}
+    }
+  } else {
+    // Single-month (e.g. mayo only): row1=Marca, row2=REAL 26
+    // Dest boundaries derived from P&L row3
+    const DEST_COLS = {};
+    let curD=null;
+    for(let c=2;c<(pl[3]||[]).length;c++){
+      const d=pl[3]?.[c];
+      if(d&&String(d).trim()&&!['','nan'].includes(String(d).trim())) curD=String(d).trim();
+      const b=pl[4]?.[c]; const t=pl[5]?.[c];
+      if(b&&String(b).trim()&&t&&String(t).trim()==='REAL 26'){
+        const brand=String(b).trim();
+        if(!SKIP_BRANDS.includes(brand)){
+          const k=`${curD}|SINGLE|${brand}`;
+          if(!kpiStruct[k]){
+            // Find matching col in KPI by brand sequence
+            for(let kc=2;kc<(kpis[1]||[]).length;kc++){
+              const kb2=kpis[1]?.[kc]; const ks=kpis[2]?.[kc];
+              if(kb2&&String(kb2).trim()===brand&&ks&&String(ks).trim()==='REAL 26'){
+                kpiStruct[k]=kc; break;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 
-  // ── P&L column map: row3=Div, row4=Mes, row5=Marca, row6=ACC REAL 26 ──
+  // ── P&L column map ─────────────────────────────────────────────
   const plStruct={}; let pd2=null,pm2=null,pb2=null;
-  const plen=(pl[6]||[]).length;
-  for(let c=2;c<plen;c++){
-    const d=pl[3]?.[c],m=pl[4]?.[c],b=pl[5]?.[c],t=pl[6]?.[c];
-    if(d&&String(d).trim()) pd2=String(d).trim();
-    if(m&&String(m).trim()) pm2=String(m).trim();
-    if(b&&String(b).trim()) pb2=String(b).trim();
-    if(t&&String(t).trim()==='ACC REAL 26'){const k=`${pd2}|${pm2}|${pb2}`;if(!plStruct[k])plStruct[k]=c;}
+  // Detect P&L structure: multi-month has row4=Mes, single-month has no Mes row
+  const plHasMes = pl[4] && pl[4].some(v => ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'].includes(String(v||'').trim()));
+
+  if (plHasMes) {
+    // Multi-month: row3=Div, row4=Mes, row5=Marca, row6=ACC REAL 26
+    const plen=(pl[6]||[]).length;
+    for(let c=2;c<plen;c++){
+      const d=pl[3]?.[c],m=pl[4]?.[c],b=pl[5]?.[c],t=pl[6]?.[c];
+      if(d&&String(d).trim()) pd2=String(d).trim();
+      if(m&&String(m).trim()) pm2=String(m).trim();
+      if(b&&String(b).trim()) pb2=String(b).trim();
+      if(t&&String(t).trim()==='ACC REAL 26'){const k=`${pd2}|${pm2}|${pb2}`;if(!plStruct[k])plStruct[k]=c;}
+    }
+  } else {
+    // Single-month: row3=Div, row4=Marca, row5=REAL 26
+    let curDp=null;
+    const plen2=(pl[5]||[]).length;
+    for(let c=2;c<plen2;c++){
+      const d=pl[3]?.[c],b=pl[4]?.[c],t=pl[5]?.[c];
+      if(d&&String(d).trim()) curDp=String(d).trim();
+      if(b&&String(b).trim()&&t&&String(t).trim()==='REAL 26'){
+        const k=`${curDp}|SINGLE|${String(b).trim()}`;
+        if(!plStruct[k]) plStruct[k]=c;
+      }
+    }
   }
 
-  // ── Find row indices by label ──────────────────────────────────
+  // ── Find row indices by label (trazable, no row numbers hardcoded) ──
   const RI={};
   const LBLS=['Amenities','Chemical Products','Cleaning Supplies','Kitchen Comp.',
               'Office Supplies','Professional Service','Food Cost','Beverage Cost',
               'Rooms revenue','Direct Reservation fees','Non Direct Reservation Fees',
-              'Sales Commission','Sales Commission Loyalty','Marketing Fee'];
+              'Sales Commission','Sales Commission Loyalty','Marketing Fee',
+              'Electricity','Gas','Water','Fuels'];
   for(let i=0;i<pl.length;i++){
     const v=pl[i]?.[1]; if(!v) continue; const s=String(v).trim();
     for(const t of LBLS){if(s===t&&!RI[t]) RI[t]=i;}
   }
-  // F&B Cost OPEX: first occurrence rows 50-120
   for(let i=50;i<130;i++){const v=pl[i]?.[1];if(v&&String(v).trim()==='F&B Cost'&&!RI['F&B Cost OPEX']){RI['F&B Cost OPEX']=i;break;}}
 
-  // KPI data rows (new clean structure)
-  const KR={RN:5,Occ:6,Util:13};
+  // ── KPI label → row (for utilities fallback) ──
+  const KL={};
+  for(let i=0;i<kpis.length;i++){
+    const v=kpis[i]?.[1]; if(!v) continue; const s=String(v).trim();
+    if(!KL[s]) KL[s]=i;
+  }
 
-  // ── Extract ────────────────────────────────────────────────────
+  // ── Determine months to iterate ────────────────────────────────
+  // For multi-month: extract unique months from kpiStruct keys
+  // For single-month: use ['SINGLE']
+  const allMonths = isMultiMonth
+    ? [...new Set(Object.keys(kpiStruct).map(k=>k.split('|')[1]))].filter(m=>m&&m!=='undefined')
+    : ['SINGLE'];
+
+  // ── Extract ─────────────────────────────────────────────────────
   const result={};
   const allDests=[...new Set(Object.keys(kpiStruct).map(k=>k.split('|')[0]))]
     .filter(d=>d&&!['nan','undefined','Resultado total'].includes(d));
@@ -861,19 +934,29 @@ function parsePL(pl, kpis) {
       .filter(b=>b&&!SKIP_BRANDS.includes(b)))];
 
     for(const brand of brands){
-      let rt=0; const op2=[],ut=[];
+      let rt=0; const op2=[];
       const ov={Am:0,Ch:0,Cl:0,FB:0,Ki:0,Of:0,PS:0};
       let f0=0,bv=0,rv=0,dr=0,nd=0,mk=0,lo=0,sa=0;
+      let util_acc=0; // accumulate utilities × rn for weighted avg
 
-      for(const month of DATA_MONTHS){
+      for(const month of allMonths){
         const kk=`${dest}|${month}|${brand}`;
         if(!kpiStruct[kk]) continue;
         const kc=kpiStruct[kk];
         const gk=(r)=>+(kpis[r]?.[kc]||0);
-        const rn=Math.abs(gk(KR.RN)); if(rn<=0) continue;
+        // RN from KPI — find row dynamically
+        const rnRow = KL['¤ Room nights'] ?? 5;
+        const rn=Math.abs(gk(rnRow)); if(rn<=0) continue;
         rt+=rn;
-        const occ=gk(KR.Occ); if(occ) op2.push([occ,rn]);
-        const util=Math.abs(gk(KR.Util)); if(util) ut.push([util,rn]);
+        const occRow = KL['% Occupancy (RN)'] ?? 6;
+        const occ=gk(occRow); if(occ) op2.push([occ,rn]);
+
+        // Utilities from KPI: Electricity/RN + Fuels/RN + Gas/RN + Water/RN
+        const elecRow=KL['¤ Electricity/RN']??18, fuelRow=KL['¤ Fuels/RN']??19;
+        const gasRow =KL['¤ Gas/RN']??20,       waterRow=KL['¤ Water/RN']??21;
+        const util_rn = Math.abs(gk(elecRow))+Math.abs(gk(fuelRow))+Math.abs(gk(gasRow))+Math.abs(gk(waterRow));
+        // Fallback: if KPI doesn't have breakdown, use P&L Electricity+Gas+Water lines below
+        util_acc += util_rn * rn;
 
         const pk=`${dest}|${month}|${brand}`;
         if(!plStruct[pk]) continue;
@@ -889,6 +972,15 @@ function parsePL(pl, kpis) {
         dr+=gp(RI['Direct Reservation fees']); nd+=gp(RI['Non Direct Reservation Fees']);
         sa+=gp(RI['Sales Commission']); lo+=gp(RI['Sales Commission Loyalty']);
         mk+=gp(RI['Marketing Fee']);
+
+        // If KPI util was 0, fallback to P&L lines
+        if(util_rn===0){
+          const elec_pl=Math.abs(gp(RI['Electricity']));
+          const gas_pl =Math.abs(gp(RI['Gas']));
+          const water_pl=Math.abs(gp(RI['Water']));
+          const fuels_pl=Math.abs(gp(RI['Fuels']));
+          util_acc += (elec_pl+gas_pl+water_pl+fuels_pl)/rn * rn * 0.20; // note: /rn*rn = total, then *0.20
+        }
       }
 
       if(rt<=0) continue;
@@ -899,7 +991,8 @@ function parsePL(pl, kpis) {
                   Kitchen:Math.abs(ov.Ki/rt),Office:Math.abs(ov.Of/rt),ProfSvc:Math.abs(ov.PS/rt)};
       const fees={Direct:Math.abs(dr/rt),NonDirect:Math.abs(nd/rt),
                   Marketing:Math.abs(mk/rt),Loyalty:Math.abs(lo/rt),Sales:Math.abs(sa/rt)};
-      const util=wa(ut)*0.20;
+      // util: weighted avg of util_rn × 20% variabilization
+      const util = (util_acc/rt) * 0.20;
       if(!result[dest]) result[dest]={};
       result[dest][brand]={rn:rt,occ:wa(op2),adr,fb,opex,fees,util};
     }
